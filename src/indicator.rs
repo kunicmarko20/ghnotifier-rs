@@ -1,5 +1,3 @@
-extern crate libappindicator;
-
 use libappindicator::{AppIndicator, AppIndicatorStatus};
 use std::env;
 use super::menu::Menu;

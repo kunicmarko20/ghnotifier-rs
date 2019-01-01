@@ -1,6 +1,3 @@
-extern crate webbrowser;
-extern crate gtk;
-
 use gtk::{WidgetExt, MenuShellExt, MenuItemExt};
 
 pub struct Menu {

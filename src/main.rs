@@ -1,6 +1,3 @@
-extern crate gtk_sys;
-extern crate gtk;
-
 mod indicator;
 mod menu;
 mod notifier;
