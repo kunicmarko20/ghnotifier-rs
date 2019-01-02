@@ -15,16 +15,21 @@ impl Menu {
     }
 
     fn create_menu(&self) {
-        &self.append("Open Notifications", |_| {
+        &self.append_with_callback("Open Notifications", |_| {
             webbrowser::open(GITHUB_NOTIFICATIONS);
         });
 
-        &self.append("Quit", |_| {
+        &self.append_with_callback("Settings", |_| {
+        });
+
+        &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
+
+        &self.append_with_callback("Quit", |_| {
             gtk::main_quit();
         });
     }
 
-    fn append<F: Fn(&gtk::MenuItem) + 'static>(&self, name: &str, callback: F) {
+    fn append_with_callback<F: Fn(&gtk::MenuItem) + 'static>(&self, name: &str, callback: F) {
         let menu_item = gtk::MenuItem::new_with_label(name);
         menu_item.connect_activate(callback);
         &self.gtk_menu.append(&menu_item);

@@ -1,32 +1,37 @@
 use super::indicator::Indicator;
+use super::github_client::GithubClient;
+use super::github_client::Notification;
 
 pub struct Notifier {
     indicator: Indicator,
-    notified_ids: Vec<u64>
+    notified_ids: Vec<String>
 }
-
-const GITHUB_API_NOTIFICATIONS: &str = "https://api.github.com/notifications";
 
 impl Notifier {
     pub fn new(indicator: Indicator) -> Notifier {
         Notifier{indicator, notified_ids: Vec::new()}
     }
 
-    pub fn notify(&self) {
-        Self::get_notifications();
+    pub fn notify(&mut self) {
+        match GithubClient::get_notifications() {
+            Ok(notifications) => self.ok(notifications),
+            Err(_) => Self::error()
+        }
     }
 
-    fn get_notifications() {
-        match reqwest::Client::new()
-            .get(GITHUB_API_NOTIFICATIONS)
-            .send() {
-            Ok(response) => {
-                if response.status() != 200 {
-                    Self::error();
-                    return;
-                }
-            },
-            Err(_) => Self::error()
+    fn ok(&mut self, notifications: Vec<Notification>) {
+        for notification in notifications.iter() {
+            if self.notified_ids.contains(notification.id()) {
+                continue;
+            }
+
+            Self::send(
+                notification.title(),
+                notification.body(),
+                None
+            );
+
+            &self.notified_ids.push(notification.id().to_owned());
         }
     }
 
@@ -34,13 +39,13 @@ impl Notifier {
         Self::send(
             "Something went wrong",
             "Github didn't respond as expected, check if your access token is correct.",
-                Some("error")
+            Some("error")
         )
     }
 
-    fn send(summary: &str, body: &str, icon: Option<&str>) {
+    fn send(title: &str, body: &str, icon: Option<&str>) {
         notify_rust::Notification::new()
-            .summary(summary)
+            .summary(title)
             .body(body)
             .icon(match icon {
                 Some(icon) => icon,
