@@ -12,10 +12,10 @@ impl Notifier {
         Notifier{indicator, notified_ids: Vec::new()}
     }
 
-    pub fn notify(&mut self) {
-        match GithubClient::get_notifications() {
+    pub fn execute(&mut self) {
+        match GithubClient::new().get_notifications() {
             Ok(notifications) => self.ok(notifications),
-            Err(_) => Self::error()
+            Err(error) => Self::error(error.as_str())
         }
     }
 
@@ -33,12 +33,14 @@ impl Notifier {
 
             &self.notified_ids.push(notification.id().to_owned());
         }
+
+        &self.indicator.update_label(notifications.len().to_string().as_str());
     }
 
-    fn error() {
+    fn error(body: &str) {
         Self::send(
             "Something went wrong",
-            "Github didn't respond as expected, check if your access token is correct.",
+            body,
             Some("error")
         )
     }

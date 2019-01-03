@@ -1,24 +1,30 @@
-use std::error::Error;
 use reqwest::header::{AUTHORIZATION};
+use super::config::Config;
 
-pub struct GithubClient;
+pub struct GithubClient{
+    config: Config
+}
 
 const GITHUB_API_NOTIFICATIONS: &str = "https://api.github.com/notifications";
 
 impl GithubClient {
-    pub fn get_notifications() -> Result<Vec<Notification>, String> {
+    pub fn new() -> Self {
+        GithubClient{config: Config::new()}
+    }
+
+    pub fn get_notifications(&self) -> Result<Vec<Notification>, String> {
         match reqwest::Client::new()
             .get(GITHUB_API_NOTIFICATIONS)
-            .header(AUTHORIZATION, "token xxx")
+            .header(AUTHORIZATION, String::from("token ") + &self.config.get("access_token")?)
             .send() {
             Ok(mut response) => {
                 if response.status() != 200 {
-                    return Err(String::from("Something went wrong."));
+                    return Err(String::from("Github didn't respond as expected, check if your access token is correct."));
                 }
 
                 Ok(response.json().unwrap())
             },
-            Err(_) => return Err(String::from("Some`thing went wrong."))
+            Err(_) => return Err(String::from("Github didn't respond as expected, check if your access token is correct."))
         }
     }
 }

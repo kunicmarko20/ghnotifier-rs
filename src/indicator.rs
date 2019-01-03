@@ -23,4 +23,8 @@ impl Indicator {
     pub fn set_menu(&mut self, mut menu: Menu) {
         self.app_indicator.set_menu(menu.inner())
     }
+
+    pub fn update_label(&mut self, label: &str) {
+        &self.app_indicator.set_label(label, "");
+    }
 }

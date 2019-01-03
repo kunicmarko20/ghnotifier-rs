@@ -4,6 +4,7 @@ mod indicator;
 mod menu;
 mod notifier;
 mod github_client;
+mod config;
 
 fn main() {
     gtk::init().unwrap();
@@ -11,6 +12,6 @@ fn main() {
     let menu = menu::Menu::new();
     indicator.set_menu(menu);
     let mut notifier = notifier::Notifier::new(indicator);
-    notifier.notify();
+    notifier.execute();
     gtk::main();
 }
