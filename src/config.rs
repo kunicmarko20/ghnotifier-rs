@@ -1,5 +1,3 @@
-use super::notifier::Notifier;
-
 pub struct Config{
     config: config::Config
 }
