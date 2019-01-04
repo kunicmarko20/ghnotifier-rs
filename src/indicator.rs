@@ -11,7 +11,7 @@ const INDICATOR_ID: &str = "Github Notifier RS";
 unsafe impl Send for Indicator{}
 
 impl Indicator {
-    pub fn new() -> Indicator {
+    pub fn new(mut menu: Menu) -> Indicator {
         let mut app_indicator = AppIndicator::new(INDICATOR_ID, &format!(
             "{}{}",
             env::current_dir().unwrap().to_str().unwrap(),
@@ -19,11 +19,8 @@ impl Indicator {
         ));
         app_indicator.set_status(AppIndicatorStatus::APP_INDICATOR_STATUS_ACTIVE);
         app_indicator.set_label("0", "");
+        app_indicator.set_menu(menu.inner());
         Indicator{app_indicator}
-    }
-
-    pub fn set_menu(&mut self, mut menu: Menu) {
-        self.app_indicator.set_menu(menu.inner())
     }
 
     pub fn update_label(&mut self, label: &str) {

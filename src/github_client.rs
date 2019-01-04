@@ -29,7 +29,7 @@ impl GithubClient {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize)]
 pub struct Notification {
     id: String,
     subject: Subject,
@@ -50,12 +50,12 @@ impl Notification {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize)]
 struct Subject {
     title: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize)]
 struct Repository {
     name: String
 }

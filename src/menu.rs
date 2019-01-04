@@ -1,4 +1,5 @@
-use gtk::{WidgetExt, MenuShellExt, MenuItemExt};
+use gtk::*;
+use super::settings::Settings;
 
 pub struct Menu {
     gtk_menu: gtk::Menu
@@ -20,6 +21,7 @@ impl Menu {
         });
 
         &self.append_with_callback("Settings", |_| {
+            Settings::new();
         });
 
         &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());

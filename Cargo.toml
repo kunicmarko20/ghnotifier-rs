@@ -16,3 +16,6 @@ serde = "1.0.84"
 serde_json="1.0.3"
 serde_derive="1.0.84"
 config = "0.9"
+
+[features]
+default = ["gtk/v3_10"]
