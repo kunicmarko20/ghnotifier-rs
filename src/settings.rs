@@ -29,7 +29,7 @@ impl Settings {
     }
 
     fn build_window() -> Window {
-        let window = Window::new(WindowType::Popup);
+        let window = Window::new(WindowType::Toplevel);
         let header_bar = gtk::HeaderBar::new();
         header_bar.set_title("Settings");
         header_bar.set_show_close_button(true);

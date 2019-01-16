@@ -1,4 +1,5 @@
 use super::github_client::Notification;
+use std::mem;
 
 pub struct Notifier {
     notified_ids: Vec<String>
@@ -10,7 +11,7 @@ impl Notifier {
     }
 
     pub fn execute(&mut self, notifications: Vec<Notification>) {
-        for notification in notifications.iter() {
+        for notification in notifications.iter().take(10) {
             if self.notified_ids.contains(notification.id()) {
                 continue;
             }
@@ -20,9 +21,13 @@ impl Notifier {
                 notification.body(),
                 None
             );
-
-            &self.notified_ids.push(notification.id().to_owned());
         }
+
+        mem::swap(&mut self.notified_ids,
+                  &mut notifications.iter()
+                      .map(|notification| notification.id().to_owned())
+                      .collect::<Vec<String>>()
+        );
     }
 
     pub fn error(body: &str) {
