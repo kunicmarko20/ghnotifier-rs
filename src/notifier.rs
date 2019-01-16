@@ -5,13 +5,15 @@ pub struct Notifier {
     notified_ids: Vec<String>
 }
 
+const MAX_NOTIFICATIONS: usize = 10;
+
 impl Notifier {
     pub fn new() -> Notifier {
         Notifier{notified_ids: Vec::new()}
     }
 
     pub fn execute(&mut self, notifications: Vec<Notification>) {
-        for notification in notifications.iter().take(10) {
+        for notification in notifications.iter().take(MAX_NOTIFICATIONS) {
             if self.notified_ids.contains(notification.id()) {
                 continue;
             }
