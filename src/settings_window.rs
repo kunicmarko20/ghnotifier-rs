@@ -1,9 +1,9 @@
 use gtk::*;
 use super::config::Config;
 
-pub struct Settings;
+pub struct SettingsWindow;
 
-impl Settings {
+impl SettingsWindow {
     pub fn new() {
         let window = Self::build_window();
         let vertical_box = Box::new(Orientation::Vertical, 6);
@@ -15,7 +15,11 @@ impl Settings {
         window.show_all();
         button.connect_clicked(move |_| {
             let mut config = Config::new();
-            config.set("access_token", access_token_field.get_text().unwrap());
+
+            if let Some(access_token) = access_token_field.get_text() {
+                config.set("access_token", access_token);
+            }
+
             config.set("refresh_time", String::from(
                 match refresh_time_field.get_active() {
                     1 => "30",
@@ -24,6 +28,7 @@ impl Settings {
                     _ => "10"
                 }
             ));
+            config.save();
             window.close();
         });
     }
@@ -44,7 +49,11 @@ impl Settings {
     fn build_access_token_field(vertical_box: &Box, config: &Config) -> Entry {
         vertical_box.add(&Label::new("Access token:"));
         let access_token_field = Entry::new();
-        access_token_field.set_text(&config.get("access_token").unwrap());
+
+        if let Ok(access_token) = config.get("access_token") {
+            access_token_field.set_text(&access_token);
+        }
+
         vertical_box.pack_start(&access_token_field, true, true, 0);
         access_token_field
     }
