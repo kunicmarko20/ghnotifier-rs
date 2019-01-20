@@ -1,11 +1,13 @@
 use gtk::*;
 use super::settings_window::SettingsWindow;
+use super::config;
 
 pub struct Menu {
     gtk_menu: gtk::Menu
 }
 
 const GITHUB_NOTIFICATIONS: &str = "https://github.com/notifications";
+const QUIET_MODE_LABEL: &str = "Quiet Mode";
 
 impl Menu {
     pub fn new() -> Menu {
@@ -17,11 +19,36 @@ impl Menu {
 
     fn create_menu(&self) {
         &self.append_with_callback("Open Notifications", |_| {
-            webbrowser::open(GITHUB_NOTIFICATIONS);
+            webbrowser::open(GITHUB_NOTIFICATIONS).unwrap();
         });
 
         &self.append_with_callback("Settings", |_| {
             SettingsWindow::new();
+        });
+
+        &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
+
+        let config = config::Config::new();
+
+        let quiet_mode_label = if config.get("quite_mode").unwrap() == "1" {
+             QUIET_MODE_LABEL.to_string() + " ✅"
+        } else {
+            QUIET_MODE_LABEL.to_string()
+        };
+
+        &self.append_with_callback(&quiet_mode_label, move |menu_item| {
+            let mut config = config::Config::new();
+
+            if config.get("quiet_mode").unwrap() == "0" {
+                menu_item.set_label(&(QUIET_MODE_LABEL.to_owned() + " ✅"));
+                config.set("quiet_mode", String::from("1"));
+                config.save();
+                return
+            }
+
+            menu_item.set_label(&QUIET_MODE_LABEL.to_owned());
+            config.set("quiet_mode", String::from("0"));
+            config.save();
         });
 
         &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());

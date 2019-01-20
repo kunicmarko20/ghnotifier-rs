@@ -1,8 +1,6 @@
 pub struct Notifier;
 
 impl Notifier {
-    pub const MAX_NOTIFICATIONS: usize = 10;
-
     pub fn error(body: &str) {
         Self::send(
             "Something went wrong",

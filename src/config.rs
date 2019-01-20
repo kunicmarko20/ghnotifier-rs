@@ -1,4 +1,3 @@
-use std::fs::File;
 use std::io::Write;
 use std::fs::OpenOptions;
 use config::*;
@@ -30,7 +29,7 @@ impl Config {
 
     pub fn save(&mut self) {
         if let Ok(mut file) = OpenOptions::new().write(true).open(&self.path) {
-            file.set_len(0);
+            file.set_len(0).unwrap();
             for (key, value) in self.config.collect().unwrap() {
                 file.write_all(
                     format!(
