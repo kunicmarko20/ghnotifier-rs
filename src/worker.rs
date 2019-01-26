@@ -54,7 +54,7 @@ impl<'a> Worker<'a> {
             Ok(notifications) => {
                 &self.indicator.update_label(notifications.len().to_string().as_str());
 
-                if &self.config.get("quite_mode").unwrap() == "1" {
+                if &self.config.get("quiet_mode").unwrap() == "1" {
                     return;
                 }
 

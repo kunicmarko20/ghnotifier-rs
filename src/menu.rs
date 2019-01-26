@@ -28,15 +28,31 @@ impl Menu {
 
         &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
 
+        &self.setup_quiet_mode_menu_item();
+
+        &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
+
+        &self.append_with_callback("Quit", |_| {
+            gtk::main_quit();
+        });
+    }
+
+    fn append_with_callback<F: Fn(&gtk::MenuItem) + 'static>(&self, name: &str, callback: F) {
+        let menu_item = gtk::MenuItem::new_with_label(name);
+        menu_item.connect_activate(callback);
+        &self.gtk_menu.append(&menu_item);
+    }
+
+    fn setup_quiet_mode_menu_item(&self) {
         let config = config::Config::new();
 
-        let quiet_mode_label = if config.get("quite_mode").unwrap() == "1" {
-             QUIET_MODE_LABEL.to_string() + " ✅"
+        let quiet_mode_label = if config.get("quiet_mode").unwrap() == "1" {
+            QUIET_MODE_LABEL.to_string() + " ✅"
         } else {
             QUIET_MODE_LABEL.to_string()
         };
 
-        &self.append_with_callback(&quiet_mode_label, move |menu_item| {
+        &self.append_with_callback(&quiet_mode_label, |menu_item| {
             let mut config = config::Config::new();
 
             if config.get("quiet_mode").unwrap() == "0" {
@@ -50,18 +66,6 @@ impl Menu {
             config.set("quiet_mode", String::from("0"));
             config.save();
         });
-
-        &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
-
-        &self.append_with_callback("Quit", |_| {
-            gtk::main_quit();
-        });
-    }
-
-    fn append_with_callback<F: Fn(&gtk::MenuItem) + 'static>(&self, name: &str, callback: F) {
-        let menu_item = gtk::MenuItem::new_with_label(name);
-        menu_item.connect_activate(callback);
-        &self.gtk_menu.append(&menu_item);
     }
 
     pub fn inner(&mut self) -> &mut gtk::Menu {

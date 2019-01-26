@@ -46,7 +46,7 @@ impl GithubClient {
     fn get_next_page(header_map: HeaderMap) -> Option<String> {
         let headers = Headers::from(header_map);
 
-        let links = headers.get::<Link>().unwrap();
+        let links = headers.get::<Link>()?;
 
         for link in links.values() {
             if link.rel()? == [RelationType::Next] {
