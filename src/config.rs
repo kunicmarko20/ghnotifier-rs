@@ -2,18 +2,34 @@ use std::io::Write;
 use std::fs::OpenOptions;
 use config::*;
 use std::path::PathBuf;
+use std::fs;
 
 pub struct Config {
     config: config::Config,
-    path: PathBuf,
+    config_path: PathBuf,
 }
 
 impl Config {
     pub fn new() -> Self {
-        let mut config = config::Config::default();
-        let path = PathBuf::from("Config.toml");
-        config.merge(config::File::from(path.clone())).unwrap();
-        Config{config, path}
+        let mut inner_config = config::Config::default();
+        let mut config_path = dirs::config_dir().unwrap();
+        config_path.push("ghnotifier/");
+
+        if !config_path.as_path().exists() {
+            fs::create_dir_all(config_path.clone());
+            config_path.push("Config.toml");
+            let mut config = Config{config: inner_config, config_path};
+            config.set("access_token", String::from(""));
+            config.set("refresh_time", String::from("10"));
+            config.set("quiet_mode", String::from("0"));
+            config.save();
+
+            return config;
+        }
+
+        config_path.push("Config.toml");
+        inner_config.merge(config::File::from(config_path.clone())).unwrap();
+        Config{config: inner_config, config_path}
     }
 
     pub fn get(&self, key: &str) -> Result<String, String> {
@@ -28,7 +44,7 @@ impl Config {
     }
 
     pub fn save(&mut self) {
-        if let Ok(mut file) = OpenOptions::new().write(true).open(&self.path) {
+        if let Ok(mut file) = OpenOptions::new().create(true).write(true).open(&self.config_path) {
             file.set_len(0).unwrap();
             for (key, value) in self.config.collect().unwrap() {
                 file.write_all(

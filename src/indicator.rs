@@ -15,7 +15,7 @@ impl Indicator {
         let mut app_indicator = AppIndicator::new(INDICATOR_ID, &format!(
             "{}{}",
             env::current_dir().unwrap().to_str().unwrap(),
-            "/src/gh.png"
+            "/gh.png"
         ));
         app_indicator.set_status(AppIndicatorStatus::APP_INDICATOR_STATUS_ACTIVE);
         app_indicator.set_label("0", "");
