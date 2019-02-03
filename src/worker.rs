@@ -35,7 +35,7 @@ impl Worker {
             Ok(notifications) => {
                 let indicator = &self.indicator.clone();
                 let mut indicator = indicator.lock().unwrap();
-                indicator.update_label(notifications.len().to_string().as_str());
+                indicator.change_notification_number(notifications.len().to_string().as_str());
 
                 let config = &self.config.clone();
                 let config = config.lock().unwrap();

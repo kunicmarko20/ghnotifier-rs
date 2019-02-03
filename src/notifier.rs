@@ -17,7 +17,7 @@ impl Notifier {
         )
     }
 
-    pub fn send(title: &str, body: &str, icon: &str) {
+    fn send(title: &str, body: &str, icon: &str) {
         notify_rust::Notification::new()
             .summary(title)
             .body(body)
