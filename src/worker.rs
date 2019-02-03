@@ -3,22 +3,24 @@ use super::config;
 use super::github_client;
 use super::indicator;
 use std::mem;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 
-pub struct Worker<'a> {
+pub struct Worker {
     client: github_client::GithubClient,
-    config: &'a config::Config,
-    indicator: MutexGuard<'a, indicator::Indicator>,
+    config: Arc<Mutex<config::Config>>,
+    indicator:Arc<Mutex<indicator::Indicator>>,
     notified_ids: Vec<String>
 }
 
-impl<'a> Worker<'a> {
+unsafe impl Send for Worker{}
+
+impl Worker {
     pub const MAX_NOTIFICATIONS: usize = 10;
 
-    fn new(
+    pub fn new(
         client: github_client::GithubClient,
-        config: &'a config::Config,
-        indicator: MutexGuard<'a, indicator::Indicator>
+        config: Arc<Mutex<config::Config>>,
+        indicator: Arc<Mutex<indicator::Indicator>>,
     ) -> Self {
         Worker{
             client,
@@ -28,33 +30,16 @@ impl<'a> Worker<'a> {
         }
     }
 
-    pub fn run(indicator: Arc<Mutex<indicator::Indicator>>) {
-        std::thread::spawn(move || {
-            let config = config::Config::new();
-            let mut worker = Worker::new(
-                github_client::GithubClient::new(),
-                &config,
-                indicator.lock().unwrap()
-            );
-
-            loop {
-                &worker.execute();
-
-                std::thread::sleep(
-                    std::time::Duration::from_secs(
-                        config.get("refresh_time").unwrap().parse::<u64>().unwrap()
-                    )
-                );
-            }
-        });
-    }
-
-    fn execute(&mut self) {
+    pub fn execute(&mut self) {
         match &self.client.get_notifications() {
             Ok(notifications) => {
-                &self.indicator.update_label(notifications.len().to_string().as_str());
+                let indicator = &self.indicator.clone();
+                let mut indicator = indicator.lock().unwrap();
+                indicator.update_label(notifications.len().to_string().as_str());
 
-                if &self.config.get("quiet_mode").unwrap() == "1" {
+                let config = &self.config.clone();
+                let config = config.lock().unwrap();
+                if config.get("quiet_mode").unwrap() == "1" {
                     return;
                 }
 

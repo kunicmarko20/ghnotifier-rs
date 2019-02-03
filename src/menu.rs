@@ -1,29 +1,32 @@
 use gtk::*;
 use super::settings_window::SettingsWindow;
 use super::config;
+use std::sync::{Arc, Mutex};
 
 pub struct Menu {
-    gtk_menu: gtk::Menu
+    gtk_menu: gtk::Menu,
+    config: Arc<Mutex<config::Config>>
 }
 
 const GITHUB_NOTIFICATIONS: &str = "https://github.com/notifications";
 const QUIET_MODE_LABEL: &str = "Quiet Mode";
 
 impl Menu {
-    pub fn new() -> Menu {
-        let menu = Menu{gtk_menu:gtk::Menu::new()};
+    pub fn new(config: Arc<Mutex<config::Config>>) -> Menu {
+        let mut menu = Menu{gtk_menu:gtk::Menu::new(), config};
         menu.create_menu();
         menu.gtk_menu.show_all();
         menu
     }
 
-    fn create_menu(&self) {
+    fn create_menu(&mut self) {
         &self.append_with_callback("Open Notifications", |_| {
             webbrowser::open(GITHUB_NOTIFICATIONS).unwrap();
         });
 
-        &self.append_with_callback("Settings", |_| {
-            SettingsWindow::new();
+        let config = self.config.clone();
+        &self.append_with_callback("Settings", move|_| {
+            SettingsWindow::new(config.clone());
         });
 
         &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
@@ -43,18 +46,18 @@ impl Menu {
         &self.gtk_menu.append(&menu_item);
     }
 
-    fn setup_quiet_mode_menu_item(&self) {
-        let config = config::Config::new();
-
+    fn setup_quiet_mode_menu_item(&mut self) {
+        let config = self.config.clone();
+        let config = config.lock().unwrap();
         let quiet_mode_label = if config.get("quiet_mode").unwrap() == "1" {
             QUIET_MODE_LABEL.to_string() + " ✅"
         } else {
             QUIET_MODE_LABEL.to_string()
         };
 
-        &self.append_with_callback(&quiet_mode_label, |menu_item| {
-            let mut config = config::Config::new();
-
+        let config = self.config.clone();
+        &self.append_with_callback(&quiet_mode_label, move |menu_item| {
+            let mut config = config.lock().unwrap();
             if config.get("quiet_mode").unwrap() == "0" {
                 menu_item.set_label(&(QUIET_MODE_LABEL.to_owned() + " ✅"));
                 config.set("quiet_mode", String::from("1"));

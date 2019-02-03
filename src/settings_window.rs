@@ -1,20 +1,23 @@
 use gtk::*;
 use super::config::Config;
+use std::sync::{Arc, Mutex};
+
 
 pub struct SettingsWindow;
 
 impl SettingsWindow {
-    pub fn new() {
+    pub fn new(config: Arc<Mutex<Config>>) {
         let window = Self::build_window();
         let vertical_box = Box::new(Orientation::Vertical, 6);
-        let config = Config::new();
-        let access_token_field = Self::build_access_token_field(&vertical_box, &config);
-        let refresh_time_field = Self::build_refresh_time_field(&vertical_box, &config);
+        let access_token_field = Self::build_access_token_field(&vertical_box, Arc::clone(&config));
+        let refresh_time_field = Self::build_refresh_time_field(&vertical_box, Arc::clone(&config));
         let button = Self::build_save_button(&vertical_box);
         window.add(&vertical_box);
         window.show_all();
+
+        let config = Arc::clone(&config);
         button.connect_clicked(move |_| {
-            let mut config = Config::new();
+            let mut config = config.lock().unwrap();
 
             if let Some(access_token) = access_token_field.get_text() {
                 config.set("access_token", access_token);
@@ -46,7 +49,8 @@ impl SettingsWindow {
         window
     }
 
-    fn build_access_token_field(vertical_box: &Box, config: &Config) -> Entry {
+    fn build_access_token_field(vertical_box: &Box, config: Arc<Mutex<Config>>) -> Entry {
+        let config = config.lock().unwrap();
         vertical_box.add(&Label::new("Access token:"));
         let access_token_field = Entry::new();
 
@@ -58,7 +62,8 @@ impl SettingsWindow {
         access_token_field
     }
 
-    fn build_refresh_time_field(vertical_box: &Box, config: &Config) -> ComboBoxText {
+    fn build_refresh_time_field(vertical_box: &Box, config: Arc<Mutex<Config>>) -> ComboBoxText {
+        let config = config.lock().unwrap();
         vertical_box.add(&Label::new("Refresh time:"));
         let refresh_time = ComboBoxText::new();
         refresh_time.append(Some("10"), "10 seconds");

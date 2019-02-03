@@ -16,20 +16,23 @@ impl Config {
         config_path.push("ghnotifier/");
 
         if !config_path.as_path().exists() {
-            fs::create_dir_all(config_path.clone());
-            config_path.push("Config.toml");
-            let mut config = Config{config: inner_config, config_path};
-            config.set("access_token", String::from(""));
-            config.set("refresh_time", String::from("10"));
-            config.set("quiet_mode", String::from("0"));
-            config.save();
-
-            return config;
+            return Self::create_default(config_path.clone(), inner_config);
         }
 
         config_path.push("Config.toml");
         inner_config.merge(config::File::from(config_path.clone())).unwrap();
         Config{config: inner_config, config_path}
+    }
+
+    fn create_default(mut config_path: PathBuf, inner_config: config::Config) -> Self {
+        fs::create_dir_all(config_path.clone()).unwrap();
+        config_path.push("Config.toml");
+        let mut config = Config{config: inner_config, config_path};
+        config.set("access_token", String::from(""));
+        config.set("refresh_time", String::from("10"));
+        config.set("quiet_mode", String::from("0"));
+        config.save();
+        config
     }
 
     pub fn get(&self, key: &str) -> Result<String, String> {

@@ -1,16 +1,17 @@
 use reqwest::hyper_011::{Headers, header::Link, header::RelationType};
 use reqwest::header::{AUTHORIZATION, HeaderMap};
 use super::config::Config;
+use std::sync::{Arc, Mutex};
 
-pub struct GithubClient{
-    config: Config
+pub struct GithubClient {
+    config: Arc<Mutex<Config>>,
 }
 
 const GITHUB_API_NOTIFICATIONS: &str = "https://api.github.com/notifications";
 
 impl GithubClient {
-    pub fn new() -> Self {
-        GithubClient{config: Config::new()}
+    pub fn new(config: Arc<Mutex<Config>>) -> Self {
+        GithubClient{config}
     }
 
     pub fn get_notifications(&self) -> Result<Vec<Notification>, String> {
@@ -21,9 +22,11 @@ impl GithubClient {
     }
 
     fn request_notifications(&self, url: &str) -> Option<Vec<Notification>> {
+        let config = &self.config.clone();
+        let config = config.lock().unwrap();
         let result = reqwest::Client::new()
             .get(url)
-            .header(AUTHORIZATION, String::from("token ") + &self.config.get("access_token").unwrap())
+            .header(AUTHORIZATION, String::from("token ") + &config.get("access_token").unwrap())
             .send();
 
         let mut response = result.unwrap();

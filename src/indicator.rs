@@ -8,8 +8,6 @@ pub struct Indicator {
 
 const INDICATOR_ID: &str = "Github Notifier RS";
 
-unsafe impl Send for Indicator{}
-
 impl Indicator {
     pub fn new(mut menu: Menu) -> Indicator {
         let mut app_indicator = AppIndicator::new(INDICATOR_ID, &format!(
