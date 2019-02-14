@@ -15,40 +15,25 @@ impl GithubClient {
     }
 
     pub fn get_notifications(&self) -> Result<Vec<Notification>, String> {
-        let notifications = self.request_notifications(GITHUB_API_NOTIFICATIONS);
-
-        if let Err(_) = notifications {
-            return Err(String::from("Github didn't respond as expected, check if your access token is correct."));
-        }
-
-        Ok(notifications.unwrap())
+        return self
+            .request_notifications(GITHUB_API_NOTIFICATIONS)
+            .map_err(|_| String::from("Github didn't respond as expected, check if your access token is correct."));
     }
 
     fn request_notifications(&self, url: &str) -> Result<Vec<Notification>, ()> {
         let config = &self.config.clone();
         let config = config.lock().unwrap();
-        let result = reqwest::Client::new()
+        let mut response = reqwest::Client::new()
             .get(url)
             .header(AUTHORIZATION, String::from("token ") + &config.get("access_token").unwrap())
-            .send();
-
-        if let Err(_) = result {
-            return Err(());
-        }
-
-        let mut response = result.unwrap();
+            .send()
+            .map_err(|_| ())?;
 
         if response.status() != 200 {
             return Err(());
         }
 
-        let response_as_json = response.json();
-
-        if let Err(_) = response_as_json {
-            return Err(());
-        }
-
-        let mut notifications: Vec<Notification> = response_as_json.unwrap();
+        let mut notifications: Vec<Notification> = response.json().map_err(|_| ())?;
 
         if let Some(next_page) = Self::get_next_page(response.headers().clone()) {
             if let Ok(more_notifications) = self.request_notifications(&next_page) {
