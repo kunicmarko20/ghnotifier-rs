@@ -22,7 +22,6 @@ impl Notifier {
             .summary(title)
             .body(body)
             .icon(icon)
-            .show()
-            .unwrap();
+            .show();
     }
 }

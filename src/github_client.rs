@@ -15,13 +15,16 @@ impl GithubClient {
     }
 
     pub fn get_notifications(&self) -> Result<Vec<Notification>, String> {
-        match self.request_notifications(GITHUB_API_NOTIFICATIONS) {
-            Some(notifications) => return Ok(notifications),
-            None => return Err(String::from("Github didn't respond as expected, check if your access token is correct."))
+        let notifications = self.request_notifications(GITHUB_API_NOTIFICATIONS);
+
+        if let Err(_) = notifications {
+            return Err(String::from("Github didn't respond as expected, check if your access token is correct."));
         }
+
+        Ok(notifications.unwrap())
     }
 
-    fn request_notifications(&self, url: &str) -> Option<Vec<Notification>> {
+    fn request_notifications(&self, url: &str) -> Result<Vec<Notification>, ()> {
         let config = &self.config.clone();
         let config = config.lock().unwrap();
         let result = reqwest::Client::new()
@@ -29,21 +32,31 @@ impl GithubClient {
             .header(AUTHORIZATION, String::from("token ") + &config.get("access_token").unwrap())
             .send();
 
+        if let Err(_) = result {
+            return Err(());
+        }
+
         let mut response = result.unwrap();
 
         if response.status() != 200 {
-            return None;
+            return Err(());
         }
 
-        let mut notifications: Vec<Notification> = response.json().unwrap();
+        let response_as_json = response.json();
+
+        if let Err(_) = response_as_json {
+            return Err(());
+        }
+
+        let mut notifications: Vec<Notification> = response_as_json.unwrap();
 
         if let Some(next_page) = Self::get_next_page(response.headers().clone()) {
-            if let Some(more_notifications) = self.request_notifications(&next_page) {
+            if let Ok(more_notifications) = self.request_notifications(&next_page) {
                 notifications.extend(more_notifications);
             }
         }
 
-        Some(notifications)
+        Ok(notifications)
     }
 
     fn get_next_page(header_map: HeaderMap) -> Option<String> {

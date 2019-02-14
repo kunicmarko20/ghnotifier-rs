@@ -71,7 +71,7 @@ impl SettingsWindow {
         refresh_time.append(Some("60"), "60 seconds");
         refresh_time.append(Some("300"), "300 seconds");
         refresh_time.set_active(
-            match config.get("refresh_Time").unwrap().as_str() {
+            match config.get("refresh_time").unwrap().as_str() {
                 "30" => 1,
                 "60" => 2,
                 "300" => 3,
