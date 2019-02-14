@@ -22,6 +22,7 @@ impl Notifier {
             .summary(title)
             .body(body)
             .icon(icon)
-            .show();
+            .show()
+            .expect("Unable to send notification.");
     }
 }
