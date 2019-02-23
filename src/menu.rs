@@ -49,11 +49,7 @@ impl Menu {
     fn setup_quiet_mode_menu_item(&mut self) {
         let config = self.config.clone();
         let config = config.lock().unwrap();
-        let quiet_mode_label = if config.get("quiet_mode").unwrap() == "1" {
-            QUIET_MODE_LABEL.to_string() + " ✅"
-        } else {
-            QUIET_MODE_LABEL.to_string()
-        };
+        let quiet_mode_label = Self::resolve_quite_mode_label(config.get("quiet_mode").unwrap());
 
         let config = self.config.clone();
         &self.append_with_callback(&quiet_mode_label, move |menu_item| {
@@ -69,6 +65,14 @@ impl Menu {
             config.set("quiet_mode", String::from("0"));
             config.save();
         });
+    }
+
+    fn resolve_quite_mode_label(config: String) -> String {
+        if config == "1" {
+            return QUIET_MODE_LABEL.to_string() + " ✅";
+        }
+
+        QUIET_MODE_LABEL.to_string()
     }
 
     pub fn inner(&mut self) -> &mut gtk::Menu {
