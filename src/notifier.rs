@@ -19,6 +19,7 @@ impl Notifier {
 
     fn send(title: &str, body: &str, icon: &str) {
         notify_rust::Notification::new()
+            .appname("Github Notifier")
             .summary(title)
             .body(body)
             .icon(icon)
