@@ -7,8 +7,14 @@ impl Application {
     pub fn run() {
         match GithubNotifier::from_args().command {
             SubCommand::Install(command) => Self::execute(command),
-            SubCommand::Run(command) => Self::execute(command),
-            SubCommand::RunDetached(command) => Self::execute(command),
+            SubCommand::Run(command) => {
+                if !command.detached {
+                    Self::execute(command);
+                    return;
+                }
+
+                Self::execute(command::run_detached::RunDetached{})
+            },
             SubCommand::Uninstall(command) => Self::execute(command),
         }
     }
@@ -21,7 +27,7 @@ impl Application {
 #[derive(Debug, StructOpt)]
 struct GithubNotifier {
     #[structopt(subcommand)]
-    pub command: SubCommand,
+    pub command: SubCommand
 }
 
 #[derive(Debug, StructOpt)]
@@ -30,11 +36,8 @@ enum SubCommand {
     /// Installs the needed things.
     Install(command::install::Install),
     #[structopt(name = "run")]
-    /// Starts the Application that blocks the terminal
+    /// Starts the Application
     Run(command::run::Run),
-    #[structopt(name = "run-detached")]
-    /// Starts the Application that doesn't blocks the terminal
-    RunDetached(command::run_detached::RunDetached),
     #[structopt(name = "uninstall")]
     /// Removes everything
     Uninstall(command::uninstall::Uninstall),

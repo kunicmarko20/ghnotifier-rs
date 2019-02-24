@@ -1,6 +1,6 @@
 use structopt::StructOpt;
 use super::Command;
-use super::super::super::asset::Asset;
+use crate::asset::Asset;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]

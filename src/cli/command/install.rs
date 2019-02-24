@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::fs::OpenOptions;
 use structopt::StructOpt;
 use std::io::Write;
-use super::super::super::asset::Asset;
+use crate::asset::Asset;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -54,7 +54,7 @@ impl Install {
                 format!(
                     r#"
                     Icon={}
-                    Exec={} start
+                    Exec={} run
                     "#,
                     config_path.to_str().unwrap(),
                     std::env::current_exe().unwrap().to_str().unwrap()

@@ -1,11 +1,15 @@
 use structopt::StructOpt;
 use std::sync::{Arc, Mutex};
 use super::Command;
-use super::super::super::{menu, indicator, config, worker, github_client};
+use crate::{menu, indicator, config, worker, github_client};
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
-pub struct Run {}
+pub struct Run {
+    #[structopt(short = "d", long = "detached")]
+    /// Start application in its own process group
+    pub detached: bool,
+}
 
 impl Command for Run {
     fn execute(&self) {
