@@ -5,9 +5,9 @@ use super::super::super::{menu, indicator, config, worker, github_client};
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
-pub struct Start {}
+pub struct Run {}
 
-impl Command for Start {
+impl Command for Run {
     fn execute(&self) {
         gtk::init().unwrap();
 

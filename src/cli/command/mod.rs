@@ -1,5 +1,6 @@
 pub mod install;
-pub mod start;
+pub mod run;
+pub mod run_detached;
 pub mod uninstall;
 
 pub trait Command {
