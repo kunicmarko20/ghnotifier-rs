@@ -15,6 +15,7 @@ impl Application {
 
                 Self::execute(command::run_detached::RunDetached{})
             },
+            SubCommand::SelfUpdate(command) => Self::execute(command),
             SubCommand::Uninstall(command) => Self::execute(command),
         }
     }
@@ -38,6 +39,9 @@ enum SubCommand {
     #[structopt(name = "run")]
     /// Starts the Application
     Run(command::run::Run),
+    #[structopt(name = "self-update")]
+    /// Update application to a newer version
+    SelfUpdate(command::self_update::SelfUpdate),
     #[structopt(name = "uninstall")]
     /// Removes everything
     Uninstall(command::uninstall::Uninstall),
