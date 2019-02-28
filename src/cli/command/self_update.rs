@@ -1,13 +1,15 @@
 use structopt::StructOpt;
 use super::Command;
+use std::os::unix::fs;
 use std::os::unix::fs::PermissionsExt;
+use crate::asset::Asset;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct SelfUpdate {}
 
 const GITHUB_LATEST_RELEASE: &str = "https://api.github.com/repos/kunicmarko20/ghnotifier-rs/releases/latest";
-const BINARY_PERMISSIONS: u32 = 0o775;
+const EXECUTABLE_PERMISSIONS: u32 = 0o775;
 
 impl Command for SelfUpdate {
     fn execute(&self) {
@@ -21,33 +23,53 @@ impl Command for SelfUpdate {
             return;
         }
 
-        let mut binary = reqwest::get(release.binary_download_url())
-            .expect("Failed to download the new binary.");
+        let mut executable = reqwest::get(release.executable_download_url())
+            .expect("Failed to download new executable.");
 
-        let current_binary_path = std::env::current_exe()
-            .expect("Failed to get the path of the current binary.");
+        let mut local_data_path = dirs::data_local_dir()
+            .expect("Failed to fetch local data directory.");
 
-        let current_binary_path = current_binary_path.to_str()
-            .expect("Failed to convert the path of the current binary to string.");
+        local_data_path.push(Asset::EXECUTABLE_DIRECTORY);
 
-        std::fs::remove_file(current_binary_path)
-            .expect("Failed to remove the old binary.");
+        let path_for_new_executable = format!(
+            "{}/{}-{}",
+            local_data_path.to_str().unwrap(),
+            Asset::EXECUTABLE_NAME,
+            release.tag,
+        );
 
-        let mut file_content = std::fs::File::create(current_binary_path)
-            .expect("Failed to create the new binary.");
+        let mut file_content = std::fs::File::create(&path_for_new_executable)
+            .expect("Failed to create new executable file.");
 
-        std::io::copy(&mut binary, &mut file_content)
-            .expect("Failed to write the new binary to the disk.");
+        std::io::copy(&mut executable, &mut file_content)
+            .expect("Failed to write new executable to the disk.");
 
         let metadata = file_content.metadata()
-            .expect("Failed to get the new binary metadata.");;
+            .expect("Failed to get new executable metadata.");
 
         let mut permissions = metadata.permissions();
 
-        permissions.set_mode(BINARY_PERMISSIONS);
+        permissions.set_mode(EXECUTABLE_PERMISSIONS);
 
-        std::fs::set_permissions(current_binary_path, permissions)
-            .expect("Failed to make the new binary executable.");
+        std::fs::set_permissions(&path_for_new_executable, permissions)
+            .expect("Failed to change permissions on executable.");
+
+        let executable_directory_path = dirs::executable_dir()
+            .expect("Failed to fetch local data directory.");
+
+        let symlink_path_for_executable = format!(
+            "{}/{}",
+            executable_directory_path.to_str().unwrap(),
+            Asset::EXECUTABLE_NAME,
+        );
+
+        if let Ok(_) = std::fs::read_link(std::path::Path::new(&symlink_path_for_executable)) {
+            std::fs::remove_file(&symlink_path_for_executable)
+                .expect("Failed to remove old symlink.");
+        }
+
+        fs::symlink(path_for_new_executable, symlink_path_for_executable)
+            .expect("Failed to create symlink in system executable folder.");
     }
 }
 
@@ -59,17 +81,17 @@ struct Release {
 }
 
 impl Release {
-    pub fn binary_download_url(&self) -> &String {
+    pub fn executable_download_url(&self) -> &String {
         if let Some(asset) = self.assets.first() {
-            return &asset.binary_download_url;
+            return &asset.executable_download_url;
         }
 
-        panic!("Binary download URL is missing.");
+        panic!("Download URL missing.");
     }
 }
 
 #[derive(Deserialize)]
 struct Assets {
     #[serde(rename = "browser_download_url")]
-    binary_download_url: String,
+    executable_download_url: String,
 }

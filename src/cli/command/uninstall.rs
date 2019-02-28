@@ -1,6 +1,7 @@
 use structopt::StructOpt;
 use super::Command;
 use crate::asset::Asset;
+use std::path::Path;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -8,18 +9,36 @@ pub struct Uninstall {}
 
 impl Command for Uninstall {
     fn execute(&self) {
-        let mut config_path = dirs::config_dir().unwrap();
-        config_path.push(Asset::CONFIG_DIRECTORY);
+        let mut local_data_path = dirs::data_local_dir()
+            .expect("Failed to fetch local data directory.");
+        let mut desktop_entry_path = local_data_path.clone();
 
-        if config_path.as_path().exists() {
-            std::fs::remove_dir_all(config_path).unwrap();
+        local_data_path.push(Asset::CONFIG_DIRECTORY);
+
+        if local_data_path.as_path().exists() {
+            std::fs::remove_dir_all(local_data_path)
+                .expect("Failed to remove local data directory.");
         }
 
-        let mut data_path = dirs::data_dir().unwrap();
-        data_path.push(Asset::DESKTOP_ENTRY_PATH);
+        desktop_entry_path.push(Asset::DESKTOP_ENTRY_PATH);
 
-        if data_path.as_path().exists() {
-            std::fs::remove_file(data_path).unwrap();
+        if desktop_entry_path.as_path().exists() {
+            std::fs::remove_file(desktop_entry_path)
+                .expect("Failed to remove desktop entry.");
+        }
+
+        let executable_directory_path = dirs::executable_dir()
+            .expect("Failed to fetch executable directory.");
+
+        let symlink_path_for_executable = format!(
+            "{}/{}",
+            executable_directory_path.to_str().unwrap(),
+            Asset::EXECUTABLE_NAME,
+        );
+
+        if let Ok(_) = std::fs::read_link(Path::new(&symlink_path_for_executable)) {
+            std::fs::remove_file(&symlink_path_for_executable)
+                .expect("Failed to remove old symlink.");
         }
     }
 }
