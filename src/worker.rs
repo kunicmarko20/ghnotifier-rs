@@ -3,12 +3,12 @@ use super::config;
 use super::github_client;
 use super::indicator;
 use std::mem;
-use std::sync::{Arc, Mutex};
+use arc_guard::ArcGuard;
 
 pub struct Worker {
     client: github_client::GithubClient,
-    config: Arc<Mutex<config::Config>>,
-    indicator:Arc<Mutex<indicator::Indicator>>,
+    config: ArcGuard<config::Config>,
+    indicator: ArcGuard<indicator::Indicator>,
     notified_ids: Vec<String>
 }
 
@@ -19,8 +19,8 @@ impl Worker {
 
     pub fn new(
         client: github_client::GithubClient,
-        config: Arc<Mutex<config::Config>>,
-        indicator: Arc<Mutex<indicator::Indicator>>,
+        config: ArcGuard<config::Config>,
+        indicator: ArcGuard<indicator::Indicator>,
     ) -> Self {
         Worker{
             client,
@@ -33,13 +33,19 @@ impl Worker {
     pub fn execute(&mut self) {
         match &self.client.get_notifications() {
             Ok(notifications) => {
-                let indicator = &self.indicator.clone();
-                let mut indicator = indicator.lock().unwrap();
-                indicator.change_notification_number(notifications.len().to_string().as_str());
+                let number_of_notifications = notifications.len();
 
-                let config = &self.config.clone();
-                let config = config.lock().unwrap();
-                if config.get("quiet_mode").unwrap() == "1" {
+                self.indicator.execute(move |indicator| {
+                    let mut indicator = indicator.lock().expect("Unable to lock indicator from worker.");
+                    indicator.change_notification_number(number_of_notifications.to_string().as_str());
+                });
+
+                let quiet_mode =  self.config.execute(|config| -> String {
+                    let config = config.lock().unwrap();
+                    config.get("quiet_mode").unwrap()
+                });
+
+                if quiet_mode == "1" {
                     return;
                 }
 

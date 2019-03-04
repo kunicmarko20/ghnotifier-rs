@@ -1,18 +1,18 @@
 use gtk::*;
 use super::settings_window::SettingsWindow;
 use super::config;
-use std::sync::{Arc, Mutex};
+use arc_guard::ArcGuard;
 
 pub struct Menu {
     gtk_menu: gtk::Menu,
-    config: Arc<Mutex<config::Config>>
+    config: ArcGuard<config::Config>
 }
 
 const GITHUB_NOTIFICATIONS: &str = "https://github.com/notifications";
 const QUIET_MODE_LABEL: &str = "Quiet Mode";
 
 impl Menu {
-    pub fn new(config: Arc<Mutex<config::Config>>) -> Menu {
+    pub fn new(config: ArcGuard<config::Config>) -> Menu {
         let mut menu = Menu{gtk_menu:gtk::Menu::new(), config};
         menu.create_menu();
         menu.gtk_menu.show_all();
@@ -47,11 +47,11 @@ impl Menu {
     }
 
     fn setup_quiet_mode_menu_item(&mut self) {
-        let config = self.config.clone();
+        let config = self.config.arc();
         let config = config.lock().unwrap();
         let quiet_mode_label = Self::resolve_quite_mode_label(config.get("quiet_mode").unwrap());
 
-        let config = self.config.clone();
+        let config = self.config.arc();
         &self.append_with_callback(&quiet_mode_label, move |menu_item| {
             let mut config = config.lock().unwrap();
             if config.get("quiet_mode").unwrap() == "0" {

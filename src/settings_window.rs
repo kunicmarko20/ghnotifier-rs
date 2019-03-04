@@ -1,21 +1,21 @@
 use gtk::*;
 use super::config::Config;
 use std::sync::{Arc, Mutex};
-
+use arc_guard::ArcGuard;
 
 pub struct SettingsWindow;
 
 impl SettingsWindow {
-    pub fn new(config: Arc<Mutex<Config>>) {
+    pub fn new(config: ArcGuard<Config>) {
         let window = Self::build_window();
         let vertical_box = Box::new(Orientation::Vertical, 6);
-        let access_token_field = Self::build_access_token_field(&vertical_box, Arc::clone(&config));
-        let refresh_time_field = Self::build_refresh_time_field(&vertical_box, Arc::clone(&config));
+        let access_token_field = Self::build_access_token_field(&vertical_box, config.arc());
+        let refresh_time_field = Self::build_refresh_time_field(&vertical_box, config.arc());
         let button = Self::build_save_button(&vertical_box);
         window.add(&vertical_box);
         window.show_all();
 
-        let config = Arc::clone(&config);
+        let config = config.arc();
         button.connect_clicked(move |_| {
             let mut config = config.lock().unwrap();
 
