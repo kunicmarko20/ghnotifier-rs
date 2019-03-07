@@ -2,13 +2,16 @@ use structopt::StructOpt;
 use super::Command;
 use crate::asset::Asset;
 use std::path::Path;
+use super::Output;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Uninstall {}
 
 impl Command for Uninstall {
-    fn execute(&self) {
+    fn execute(&self, output: Box<Output>) {
+        output.write("Started uninstalling process.");
+
         let mut local_data_path = dirs::data_local_dir()
             .expect("Failed to fetch local data directory.");
         let mut desktop_entry_path = local_data_path.clone();
@@ -40,5 +43,7 @@ impl Command for Uninstall {
             std::fs::remove_file(&symlink_path_for_executable)
                 .expect("Failed to remove old symlink.");
         }
+
+        output.write("Bye!");
     }
 }

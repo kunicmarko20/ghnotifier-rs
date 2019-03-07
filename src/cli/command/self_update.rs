@@ -3,6 +3,7 @@ use super::Command;
 use std::os::unix::fs;
 use std::os::unix::fs::PermissionsExt;
 use crate::asset::Asset;
+use super::Output;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -12,7 +13,9 @@ const GITHUB_LATEST_RELEASE: &str = "https://api.github.com/repos/kunicmarko20/g
 const EXECUTABLE_PERMISSIONS: u32 = 0o775;
 
 impl Command for SelfUpdate {
-    fn execute(&self) {
+    fn execute(&self, output: Box<Output>) {
+        output.write("Started self update process.");
+
         let mut response = reqwest::get(GITHUB_LATEST_RELEASE)
             .expect("Failed to fetch the current release metadata.");
 
@@ -70,6 +73,8 @@ impl Command for SelfUpdate {
 
         fs::symlink(path_for_new_executable, symlink_path_for_executable)
             .expect("Failed to create symlink in system executable folder.");
+
+        output.write(&format!("If you are reading this, all done. Your new version is: {}", release.tag));
     }
 }
 

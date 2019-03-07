@@ -2,13 +2,16 @@ use structopt::StructOpt;
 use super::Command;
 use std::os::unix::process::CommandExt;
 use libc;
+use super::Output;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct RunDetached {}
 
 impl Command for RunDetached {
-    fn execute(&self) {
+    fn execute(&self, output: Box<Output>) {
+        output.write("Starting Github Notifier as a detached process.");
+
         std::process::Command::new("ghnotifier")
             .before_exec(Self::owned_pgid)
             .arg("run")

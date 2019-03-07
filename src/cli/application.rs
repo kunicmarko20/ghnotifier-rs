@@ -1,34 +1,46 @@
 use structopt::StructOpt;
+use super::output::{Output, OutputFactory};
 use super::command;
 
 pub struct Application;
 
 impl Application {
     pub fn run() {
-        match GithubNotifier::from_args().command {
-            SubCommand::Install(command) => Self::execute(command),
+        let ghnotifier = GithubNotifier::from_args();
+
+        Self::execute(
+            Self::inner_command(ghnotifier.sub_command),
+            OutputFactory::from_arg(ghnotifier.quiet)
+        )
+    }
+
+    fn inner_command(sub_command: SubCommand) -> Box<command::Command> {
+        match sub_command {
+            SubCommand::Install(command) => return Box::new(command),
             SubCommand::Run(command) => {
                 if !command.detached {
-                    Self::execute(command);
-                    return;
+                    return Box::new(command);
                 }
 
-                Self::execute(command::run_detached::RunDetached{})
+                return Box::new(command::run_detached::RunDetached{});
             },
-            SubCommand::SelfUpdate(command) => Self::execute(command),
-            SubCommand::Uninstall(command) => Self::execute(command),
+            SubCommand::SelfUpdate(command) => return Box::new(command),
+            SubCommand::Uninstall(command) => return Box::new(command),
         }
     }
 
-    fn execute<T: command::Command>(command: T) {
-        command.execute()
+    fn execute(command: Box<command::Command>, output: Box<Output>) {
+        command.execute(output)
     }
 }
 
 #[derive(Debug, StructOpt)]
 struct GithubNotifier {
+    #[structopt(short = "q", long = "quiet")]
+    /// Don't output anything to the console
+    pub quiet: bool,
     #[structopt(subcommand)]
-    pub command: SubCommand
+    pub sub_command: SubCommand
 }
 
 #[derive(Debug, StructOpt)]

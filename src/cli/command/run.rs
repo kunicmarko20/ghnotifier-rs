@@ -2,6 +2,7 @@ use structopt::StructOpt;
 use super::Command;
 use crate::{menu, indicator, config, worker, github_client};
 use arc_guard::ArcGuard;
+use super::Output;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -12,7 +13,8 @@ pub struct Run {
 }
 
 impl Command for Run {
-    fn execute(&self) {
+    fn execute(&self, output: Box<Output>) {
+        output.write("Starting Github Notifier.");
         gtk::init().unwrap();
 
         let config = ArcGuard::new(config::Config::new());

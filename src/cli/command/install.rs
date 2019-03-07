@@ -1,4 +1,5 @@
 use super::Command;
+use super::Output;
 use std::path::PathBuf;
 use std::fs::OpenOptions;
 use structopt::StructOpt;
@@ -17,7 +18,9 @@ const DESKTOP_ENTRY: &'static [u8] = include_bytes!("../../../assets/ghnotifier.
 const EXECUTABLE_PERMISSIONS: u32 = 0o775;
 
 impl Command for Install {
-    fn execute(&self) {
+    fn execute(&self, output: Box<Output>) {
+        output.write("Started installing process.");
+
         let local_data_path = dirs::data_local_dir()
             .expect("Failed to fetch local data directory.");
 
@@ -26,6 +29,8 @@ impl Command for Install {
         Self::create_logo(local_data_path.clone());
         Self::copy_current_executable_to_executable_directory(local_data_path.clone());
         Self::create_desktop_entry( local_data_path.clone());
+
+        output.write("If you are reading this, all done.");
     }
 }
 
