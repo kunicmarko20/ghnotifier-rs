@@ -5,7 +5,7 @@ authors = ["kunicmarko20 <kunicmarko20@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-arc-guard = { git = "https://github.com/kunicmarko20/arc-guard-rs" }
+arc-guard = "0.2.0"
 clap = "2.32.0"
 config = "0.9"
 dirs = "1.0.4"
