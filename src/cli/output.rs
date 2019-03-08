@@ -10,9 +10,9 @@ impl Output for ConsoleOutput {
     }
 }
 
-pub struct NullOutput;
+pub struct NoopOutput;
 
-impl Output for NullOutput {
+impl Output for NoopOutput {
     fn write(&self, _text: &str) {}
 }
 
@@ -21,7 +21,7 @@ pub struct OutputFactory;
 impl OutputFactory {
     pub fn from_arg(quiet: bool) -> Box<Output> {
         if quiet {
-            return Box::new(NullOutput{});
+            return Box::new(NoopOutput {});
         }
 
         Box::new(ConsoleOutput{})
