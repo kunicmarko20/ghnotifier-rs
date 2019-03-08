@@ -5,6 +5,7 @@ use std::fs::OpenOptions;
 use structopt::StructOpt;
 use std::io::Write;
 use crate::asset::Asset;
+use crate::asset;
 use std::os::unix::fs;
 use std::os::unix::fs::PermissionsExt;
 
@@ -12,7 +13,11 @@ use std::os::unix::fs::PermissionsExt;
 #[structopt(rename_all = "kebab-case")]
 pub struct Install {}
 
-const ICON: &'static [u8] = include_bytes!("../../../assets/icon.png");
+const IMAGE_LOGO: &'static [u8] = include_bytes!("../../../assets/logo.png");
+const IMAGE_ISSUE: &'static [u8] = include_bytes!("../../../assets/issue.png");
+const IMAGE_PULL_REQUEST: &'static [u8] = include_bytes!("../../../assets/pr.png");
+const IMAGE_RELEASE: &'static [u8] = include_bytes!("../../../assets/release.png");
+
 const CONFIG: &'static [u8] = include_bytes!("../../../assets/Config.toml");
 const DESKTOP_ENTRY: &'static [u8] = include_bytes!("../../../assets/ghnotifier.desktop");
 const EXECUTABLE_PERMISSIONS: u32 = 0o775;
@@ -26,7 +31,7 @@ impl Command for Install {
 
         Self::create_executable_directory(local_data_path.clone());
         Self::create_config_file(local_data_path.clone());
-        Self::create_logo(local_data_path.clone());
+        Self::create_images(local_data_path.clone());
         Self::copy_current_executable_to_executable_directory(local_data_path.clone());
         Self::create_desktop_entry( local_data_path.clone());
 
@@ -47,10 +52,18 @@ impl Install {
         }
     }
 
-    fn create_logo(mut local_data_path: PathBuf) {
-        local_data_path.push(Asset::ICON_PATH);
+    fn create_images(mut local_data_path: PathBuf) {
+        local_data_path.push(Asset::IMAGE_PATH);
+        Self::create_image(local_data_path.clone(), asset::Image::Logo.as_str(), IMAGE_LOGO);
+        Self::create_image(local_data_path.clone(), asset::Image::Issue.as_str(), IMAGE_ISSUE);
+        Self::create_image(local_data_path.clone(), asset::Image::PullRequest.as_str(), IMAGE_PULL_REQUEST);
+        Self::create_image(local_data_path.clone(), asset::Image::Release.as_str(), IMAGE_RELEASE);
+    }
+
+    fn create_image(mut local_data_path: PathBuf, image_name: &str, image: &[u8]) {
+        local_data_path.push(image_name);
         if let Ok(mut file) = OpenOptions::new().create(true).write(true).open(local_data_path) {
-            file.write(ICON).unwrap();
+            file.write(image).unwrap();
         }
     }
 
@@ -97,7 +110,8 @@ impl Install {
 
     fn create_desktop_entry(mut local_data_path: PathBuf) {
         let mut logo_path = local_data_path.clone();
-        logo_path.push(Asset::ICON_PATH);
+        logo_path.push(Asset::IMAGE_PATH);
+        logo_path.push(asset::Image::Logo.as_str());
         local_data_path.push(Asset::DESKTOP_ENTRY_PATH);
 
         if let Ok(mut file) = OpenOptions::new().create(true).write(true).open(local_data_path) {

@@ -3,6 +3,7 @@ use super::Command;
 use crate::{menu, indicator, config, worker, github_client};
 use arc_guard::ArcGuard;
 use super::Output;
+use crate::notifier::NotifierFactory;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -30,7 +31,8 @@ impl Command for Run {
         let mut worker = worker::Worker::new(
             github_client,
             config.clone(),
-            indicator
+            indicator,
+            NotifierFactory::new()
         );
 
         let config = config.clone();

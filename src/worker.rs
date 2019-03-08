@@ -1,15 +1,16 @@
-use super::notifier;
 use super::config;
 use super::github_client;
 use super::indicator;
 use std::mem;
 use arc_guard::ArcGuard;
+use crate::notifier::NotifierFactory;
 
 pub struct Worker {
     client: github_client::GithubClient,
     config: ArcGuard<config::Config>,
     indicator: ArcGuard<indicator::Indicator>,
-    notified_ids: Vec<String>
+    notifier_factory: NotifierFactory,
+    notified_ids: Vec<String>,
 }
 
 unsafe impl Send for Worker{}
@@ -21,16 +22,25 @@ impl Worker {
         client: github_client::GithubClient,
         config: ArcGuard<config::Config>,
         indicator: ArcGuard<indicator::Indicator>,
+        notifier_factory: NotifierFactory,
     ) -> Self {
         Worker{
             client,
             config,
             indicator,
+            notifier_factory,
             notified_ids: Vec::new()
         }
     }
 
     pub fn execute(&mut self) {
+        let quiet_mode =  self.config.execute(|config| -> String {
+            let config = config.lock().unwrap();
+            config.get("quiet_mode").unwrap()
+        });
+
+        let notifier = self.notifier_factory.from_arg(quiet_mode == "1");
+
         match &self.client.get_notifications() {
             Ok(notifications) => {
                 let number_of_notifications = notifications.len();
@@ -40,21 +50,12 @@ impl Worker {
                     indicator.change_notification_number(number_of_notifications.to_string().as_str());
                 });
 
-                let quiet_mode =  self.config.execute(|config| -> String {
-                    let config = config.lock().unwrap();
-                    config.get("quiet_mode").unwrap()
-                });
-
-                if quiet_mode == "1" {
-                    return;
-                }
-
                 for notification in notifications.iter().take(Self::MAX_NOTIFICATIONS) {
                     if self.notified_ids.contains(notification.id()) {
                         continue;
                     }
 
-                    notifier::Notifier::success(notification.title(), notification.body());
+                    notifier.notify(notification);
                 }
 
                 mem::swap(&mut self.notified_ids,
@@ -63,7 +64,7 @@ impl Worker {
                               .collect::<Vec<String>>()
                 );
             },
-            Err(error) => notifier::Notifier::error(error.as_str())
+            Err(error) => notifier.error(error.as_str())
         }
     }
 }

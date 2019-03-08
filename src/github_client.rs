@@ -66,7 +66,7 @@ impl GithubClient {
 pub struct Notification {
     id: String,
     subject: Subject,
-    repository: Repository
+    repository: Repository,
 }
 
 impl Notification {
@@ -81,15 +81,40 @@ impl Notification {
     pub fn body(&self) -> &String {
         &self.subject.title
     }
+
+    pub fn notification_type(&self) -> &NotificationType {
+        &self.subject.notification_type
+    }
 }
 
 #[derive(Deserialize)]
 struct Subject {
-    title: String
+    title: String,
+    #[serde(rename = "type")]
+    notification_type: NotificationType,
 }
 
 #[derive(Deserialize)]
 struct Repository {
-    name: String
+    name: String,
 }
 
+pub enum NotificationType {
+    Issue,
+    Release,
+    PullRequest,
+}
+
+impl<'de> serde::Deserialize<'de> for NotificationType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: serde::Deserializer<'de>
+    {
+        let s = String::deserialize(deserializer)?;
+        Ok(match s.as_str() {
+            "Issue" => NotificationType::Issue,
+            "Release" => NotificationType::Release,
+            "PullRequest" => NotificationType::PullRequest,
+            _ => panic!("Unknown notification type."),
+        })
+    }
+}
