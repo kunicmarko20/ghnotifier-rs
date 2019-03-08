@@ -4,6 +4,7 @@ use crate::{menu, indicator, config, worker, github_client};
 use arc_guard::ArcGuard;
 use super::Output;
 use crate::notifier::NotifierFactory;
+use crate::logger::FileLogger;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -32,7 +33,8 @@ impl Command for Run {
             github_client,
             config.clone(),
             indicator,
-            NotifierFactory::new()
+            NotifierFactory::new(),
+                Box::new(FileLogger::new())
         );
 
         let config = config.clone();

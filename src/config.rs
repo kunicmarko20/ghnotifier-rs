@@ -12,7 +12,7 @@ pub struct Config {
 impl Config {
     pub fn new() -> Self {
         let mut inner_config = config::Config::default();
-        let mut config_path = dirs::config_dir().unwrap();
+        let mut config_path = dirs::data_local_dir().unwrap();
         config_path.push(Asset::CONFIG_FILE_PATH);
 
         inner_config.merge(config::File::from(config_path.clone())).unwrap();

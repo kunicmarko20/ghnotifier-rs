@@ -14,13 +14,11 @@ impl GithubClient {
         GithubClient{config}
     }
 
-    pub fn get_notifications(&self) -> Result<Vec<Notification>, String> {
-        return self
-            .request_notifications(GITHUB_API_NOTIFICATIONS)
-            .map_err(|_| String::from("Github didn't respond as expected, check if your access token is correct."));
+    pub fn notifications(&self) -> Result<Vec<Notification>, String> {
+        return self.request_notifications(GITHUB_API_NOTIFICATIONS)
     }
 
-    fn request_notifications(&self, url: &str) -> Result<Vec<Notification>, ()> {
+    fn request_notifications(&self, url: &str) -> Result<Vec<Notification>, String> {
         let authorization_header = self.config.execute(|config| -> String {
             let config = config.lock().unwrap();
             String::from("token ") + &config.get("access_token").unwrap()
@@ -30,13 +28,20 @@ impl GithubClient {
             .get(url)
             .header(AUTHORIZATION, authorization_header)
             .send()
-            .map_err(|_| ())?;
+            .map_err(|err| err.to_string())?;
 
         if response.status() != 200 {
-            return Err(());
+            return Err(
+                format!(
+                    "Status code was {}. Response message: {}",
+                    response.status(),
+                    response.text().expect("Unable to grab response content.")
+                )
+            );
         }
 
-        let mut notifications: Vec<Notification> = response.json().map_err(|_| ())?;
+        let mut notifications: Vec<Notification> = response.json()
+            .map_err(|err| err.to_string())?;
 
         if let Some(next_page) = Self::get_next_page(response.headers().clone()) {
             if let Ok(more_notifications) = self.request_notifications(&next_page) {

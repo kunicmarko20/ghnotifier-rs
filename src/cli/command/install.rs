@@ -30,6 +30,7 @@ impl Command for Install {
             .expect("Failed to fetch local data directory.");
 
         Self::create_executable_directory(local_data_path.clone());
+        Self::create_log_directory(local_data_path.clone());
         Self::create_config_file(local_data_path.clone());
         Self::create_images(local_data_path.clone());
         Self::copy_current_executable_to_executable_directory(local_data_path.clone());
@@ -42,6 +43,11 @@ impl Command for Install {
 impl Install {
     fn create_executable_directory(mut local_data_path: PathBuf) {
         local_data_path.push(Asset::EXECUTABLE_DIRECTORY);
+        std::fs::create_dir_all(local_data_path).unwrap();
+    }
+    
+    fn create_log_directory(mut local_data_path: PathBuf) {
+        local_data_path.push(Asset::LOG_DIRECTORY);
         std::fs::create_dir_all(local_data_path).unwrap();
     }
 

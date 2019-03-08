@@ -2,6 +2,8 @@ pub struct Asset;
 
 impl Asset {
     pub const CONFIG_DIRECTORY: &'static str = "ghnotifier";
+    
+    pub const LOG_DIRECTORY: &'static str = "ghnotifier/logs";
 
     pub const EXECUTABLE_NAME: &'static str = "ghnotifier";
 
