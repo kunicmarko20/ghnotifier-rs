@@ -50,12 +50,12 @@ impl Menu {
     fn setup_quiet_mode_menu_item(&mut self) {
         let config = self.config.arc();
         let config = config.lock().expect("Unable to lock config.");
-        let quiet_mode_label = Self::resolve_quite_mode_label(config.get("quiet_mode"));
+        let quiet_mode_label = Self::resolve_quiet_mode_label(config.get_bool("quiet_mode"));
 
         let config = self.config.arc();
         self.append_with_callback(&quiet_mode_label, move |menu_item| {
             let mut config = config.lock().expect("Unable to lock config.");
-            if config.get("quiet_mode") == "0" {
+            if config.get_bool("quiet_mode") {
                 menu_item.set_label(&(QUIET_MODE_LABEL.to_owned() + " ✅"));
                 config.set("quiet_mode", String::from("1"));
                 config.save();
@@ -68,8 +68,8 @@ impl Menu {
         });
     }
 
-    fn resolve_quite_mode_label(config: String) -> String {
-        if config == "1" {
+    fn resolve_quiet_mode_label(quiet_mode: bool) -> String {
+        if quiet_mode {
             return QUIET_MODE_LABEL.to_string() + " ✅";
         }
 

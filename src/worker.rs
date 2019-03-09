@@ -40,7 +40,7 @@ impl Worker {
     pub fn execute(&mut self) {
         let quiet_mode =  self.config.execute(|config| -> String {
             let config = config.lock().expect("Unable to lock config.");
-            config.get("quiet_mode")
+            config.get_string("quiet_mode")
         });
 
         let notifier = self.notifier_factory.from_arg(quiet_mode == "1");

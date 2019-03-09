@@ -21,9 +21,22 @@ impl Config {
         Config{config: inner_config, config_path}
     }
 
-    pub fn get(&self, key: &str) -> String {
+    pub fn get_string(&self, key: &str) -> String {
         self.config.get::<String>(key)
-            .expect(&format!("Unbale to get {} from config.", key))
+            .expect(&format!("Unbale to get {} as String.", key))
+    }
+
+    pub fn get_u64(&self, key: &str) -> u64 {
+        self.config.get::<u64>(key)
+            .expect(&format!("Unbale to get {} as u64.", key))
+    }
+
+    pub fn get_bool(&self, key: &str) -> bool {
+        match self.get_string(key).as_ref() {
+            "0" => false,
+            "1" => true,
+            _ => panic!(format!("Unbale to get {} as bool.", key))
+        }
     }
 
     pub fn set(&mut self, key: &str, value: String) {

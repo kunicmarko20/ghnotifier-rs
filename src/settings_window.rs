@@ -53,7 +53,7 @@ impl SettingsWindow {
         let config = config.lock().expect("Unable to lock config.");
         vertical_box.add(&Label::new("Access token:"));
         let access_token_field = Entry::new();
-        access_token_field.set_text(&config.get("access_token"));
+        access_token_field.set_text(&config.get_string("access_token"));
 
         vertical_box.pack_start(&access_token_field, true, true, 0);
         access_token_field
@@ -68,7 +68,7 @@ impl SettingsWindow {
         refresh_time.append(Some("60"), "60 seconds");
         refresh_time.append(Some("300"), "300 seconds");
         refresh_time.set_active(
-            match config.get("refresh_time").as_str() {
+            match config.get_string("refresh_time").as_ref() {
                 "30" => 1,
                 "60" => 2,
                 "300" => 3,

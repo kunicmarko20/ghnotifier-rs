@@ -43,7 +43,7 @@ impl Command for Run {
                 &worker.execute();
                 let refresh_time = config.execute(|config| -> u64 {
                     let config = config.lock().expect("Unable to lock config.");
-                    config.get("refresh_time").parse::<u64>().expect("Unable to convert String into a u64.")
+                    config.get_u64("refresh_time")
                 });
 
                 std::thread::sleep(
