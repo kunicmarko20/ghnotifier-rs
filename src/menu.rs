@@ -20,22 +20,23 @@ impl Menu {
     }
 
     fn create_menu(&mut self) {
-        &self.append_with_callback("Open Notifications", |_| {
-            webbrowser::open(GITHUB_NOTIFICATIONS).unwrap();
+        self.append_with_callback("Open Notifications", |_| {
+            webbrowser::open(GITHUB_NOTIFICATIONS)
+                .expect("Unable to open Notifications page.");
         });
 
         let config = self.config.clone();
-        &self.append_with_callback("Settings", move|_| {
+        self.append_with_callback("Settings", move|_| {
             SettingsWindow::new(config.clone());
         });
 
-        &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
+        self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
 
-        &self.setup_quiet_mode_menu_item();
+        self.setup_quiet_mode_menu_item();
 
-        &self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
+        self.gtk_menu.append(&gtk::SeparatorMenuItem::new());
 
-        &self.append_with_callback("Quit", |_| {
+        self.append_with_callback("Quit", |_| {
             gtk::main_quit();
         });
     }
@@ -43,18 +44,18 @@ impl Menu {
     fn append_with_callback<F: Fn(&gtk::MenuItem) + 'static>(&self, name: &str, callback: F) {
         let menu_item = gtk::MenuItem::new_with_label(name);
         menu_item.connect_activate(callback);
-        &self.gtk_menu.append(&menu_item);
+        self.gtk_menu.append(&menu_item);
     }
 
     fn setup_quiet_mode_menu_item(&mut self) {
         let config = self.config.arc();
-        let config = config.lock().unwrap();
-        let quiet_mode_label = Self::resolve_quite_mode_label(config.get("quiet_mode").unwrap());
+        let config = config.lock().expect("Unable to lock config.");
+        let quiet_mode_label = Self::resolve_quite_mode_label(config.get("quiet_mode"));
 
         let config = self.config.arc();
-        &self.append_with_callback(&quiet_mode_label, move |menu_item| {
-            let mut config = config.lock().unwrap();
-            if config.get("quiet_mode").unwrap() == "0" {
+        self.append_with_callback(&quiet_mode_label, move |menu_item| {
+            let mut config = config.lock().expect("Unable to lock config.");
+            if config.get("quiet_mode") == "0" {
                 menu_item.set_label(&(QUIET_MODE_LABEL.to_owned() + " ✅"));
                 config.set("quiet_mode", String::from("1"));
                 config.save();

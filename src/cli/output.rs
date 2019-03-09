@@ -21,9 +21,9 @@ pub struct OutputFactory;
 impl OutputFactory {
     pub fn from_arg(quiet: bool) -> Box<Output> {
         if quiet {
-            return Box::new(NoopOutput {});
+            return Box::new(NoopOutput);
         }
 
-        Box::new(ConsoleOutput{})
+        Box::new(ConsoleOutput)
     }
 }

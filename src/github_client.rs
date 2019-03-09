@@ -20,8 +20,8 @@ impl GithubClient {
 
     fn request_notifications(&self, url: &str) -> Result<Vec<Notification>, String> {
         let authorization_header = self.config.execute(|config| -> String {
-            let config = config.lock().unwrap();
-            String::from("token ") + &config.get("access_token").unwrap()
+            let config = config.lock().expect("Unable to lock config.");
+            String::from("token ") + &config.get("access_token")
         });
 
         let mut response = reqwest::Client::new()

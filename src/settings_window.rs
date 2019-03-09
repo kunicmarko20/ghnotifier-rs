@@ -17,7 +17,7 @@ impl SettingsWindow {
 
         let config = config.arc();
         button.connect_clicked(move |_| {
-            let mut config = config.lock().unwrap();
+            let mut config = config.lock().expect("Unable to lock config.");
 
             if let Some(access_token) = access_token_field.get_text() {
                 config.set("access_token", access_token);
@@ -50,20 +50,17 @@ impl SettingsWindow {
     }
 
     fn build_access_token_field(vertical_box: &Box, config: Arc<Mutex<Config>>) -> Entry {
-        let config = config.lock().unwrap();
+        let config = config.lock().expect("Unable to lock config.");
         vertical_box.add(&Label::new("Access token:"));
         let access_token_field = Entry::new();
-
-        if let Ok(access_token) = config.get("access_token") {
-            access_token_field.set_text(&access_token);
-        }
+        access_token_field.set_text(&config.get("access_token"));
 
         vertical_box.pack_start(&access_token_field, true, true, 0);
         access_token_field
     }
 
     fn build_refresh_time_field(vertical_box: &Box, config: Arc<Mutex<Config>>) -> ComboBoxText {
-        let config = config.lock().unwrap();
+        let config = config.lock().expect("Unable to lock config.");
         vertical_box.add(&Label::new("Refresh time:"));
         let refresh_time = ComboBoxText::new();
         refresh_time.append(Some("10"), "10 seconds");
@@ -71,7 +68,7 @@ impl SettingsWindow {
         refresh_time.append(Some("60"), "60 seconds");
         refresh_time.append(Some("300"), "300 seconds");
         refresh_time.set_active(
-            match config.get("refresh_time").unwrap().as_str() {
+            match config.get("refresh_time").as_str() {
                 "30" => 1,
                 "60" => 2,
                 "300" => 3,

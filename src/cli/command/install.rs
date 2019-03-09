@@ -43,18 +43,18 @@ impl Command for Install {
 impl Install {
     fn create_executable_directory(mut local_data_path: PathBuf) {
         local_data_path.push(Asset::EXECUTABLE_DIRECTORY);
-        std::fs::create_dir_all(local_data_path).unwrap();
+        std::fs::create_dir_all(local_data_path).expect("Unable to create a directory.");
     }
     
     fn create_log_directory(mut local_data_path: PathBuf) {
         local_data_path.push(Asset::LOG_DIRECTORY);
-        std::fs::create_dir_all(local_data_path).unwrap();
+        std::fs::create_dir_all(local_data_path).expect("Unable to create a directory.");
     }
 
     fn create_config_file(mut local_data_path: PathBuf) {
         local_data_path.push(Asset::CONFIG_FILE_PATH);
         if let Ok(mut file) = OpenOptions::new().create(true).write(true).open(local_data_path) {
-            file.write(CONFIG).unwrap();
+            file.write(CONFIG).expect("Unable to write to a config file.");
         }
     }
 
@@ -69,7 +69,7 @@ impl Install {
     fn create_image(mut local_data_path: PathBuf, image_name: &str, image: &[u8]) {
         local_data_path.push(image_name);
         if let Ok(mut file) = OpenOptions::new().create(true).write(true).open(local_data_path) {
-            file.write(image).unwrap();
+            file.write(image).expect("Unable to write to an image file.");
         }
     }
 
@@ -85,8 +85,8 @@ impl Install {
 
         let mut file_content = std::fs::File::create(&new_path_for_current_executable).expect("Failed to create new executable.");
 
-        let mut current_executable = std::fs::File::open(std::env::current_exe().unwrap())
-            .expect("Failed to fetch currently executable.");
+        let mut current_executable = std::fs::File::open(std::env::current_exe().expect("Failed to fetch currently executable."))
+            .expect("Failed to open currently executable.");
 
         std::io::copy(&mut current_executable, &mut file_content)
             .expect("Failed to copy current executable.");
@@ -121,7 +121,7 @@ impl Install {
         local_data_path.push(Asset::DESKTOP_ENTRY_PATH);
 
         if let Ok(mut file) = OpenOptions::new().create(true).write(true).open(local_data_path) {
-            file.write(DESKTOP_ENTRY).unwrap();
+            file.write(DESKTOP_ENTRY).expect("Unable to write to a desktop entry file.");
             file.write_all(
                 format!(
                     r#"
@@ -129,9 +129,12 @@ impl Install {
                     Exec={} run
                     "#,
                     logo_path.to_str().unwrap(),
-                    std::env::current_exe().unwrap().to_str().unwrap()
+                    std::env::current_exe()
+                        .expect("Unable to fetch path of the current executable.")
+                        .to_str()
+                        .expect("Unable to convert path to a String.")
                 ).as_bytes()
-            ).unwrap();
+            ).expect("Unable to append new values to desktop entry file.");
         }
     }
 }

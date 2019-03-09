@@ -17,7 +17,7 @@ pub struct Run {
 impl Command for Run {
     fn execute(&self, output: Box<Output>) {
         output.write("Starting Github Notifier.");
-        gtk::init().unwrap();
+        gtk::init().expect("Unable to initialise gtk.");
 
         let config = ArcGuard::new(config::Config::new());
 
@@ -42,8 +42,8 @@ impl Command for Run {
             loop {
                 &worker.execute();
                 let refresh_time = config.execute(|config| -> u64 {
-                    let config = config.lock().unwrap();
-                    config.get("refresh_time").unwrap().parse::<u64>().unwrap()
+                    let config = config.lock().expect("Unable to lock config.");
+                    config.get("refresh_time").parse::<u64>().expect("Unable to convert String into a u64.")
                 });
 
                 std::thread::sleep(

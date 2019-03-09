@@ -11,7 +11,7 @@ pub struct NotifierFactory;
 
 impl NotifierFactory {
     pub fn new() -> Self {
-        NotifierFactory{}
+        NotifierFactory
     }
 
     pub fn from_arg(&self, quiet: bool) -> Box<Notifier> {

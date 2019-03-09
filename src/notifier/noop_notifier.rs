@@ -12,6 +12,6 @@ impl Notifier for NoopNotifier {
 
 impl NoopNotifier {
     pub fn new() -> Self {
-        NoopNotifier{}
+        NoopNotifier
     }
 }

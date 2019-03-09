@@ -17,7 +17,7 @@ impl Indicator {
 
         let mut app_indicator = AppIndicator::new(
             INDICATOR_ID,
-            image_path.to_str().unwrap()
+            image_path.to_str().expect("Unable to convert path to str.")
         );
 
         app_indicator.set_status(AppIndicatorStatus::APP_INDICATOR_STATUS_ACTIVE);
@@ -28,6 +28,6 @@ impl Indicator {
 
 
     pub fn change_notification_number(&mut self, label: &str) {
-        &self.app_indicator.set_label(label, "");
+        self.app_indicator.set_label(label, "");
     }
 }
