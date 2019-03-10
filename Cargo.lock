@@ -565,8 +565,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "ghnotifier-rs"
-version = "0.1.1"
+name = "ghnotifier"
+version = "0.2.0"
 dependencies = [
  "arc-guard 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
