@@ -38,12 +38,12 @@ impl Worker {
     }
 
     pub fn execute(&mut self) {
-        let quiet_mode =  self.config.execute(|config| -> String {
+        let quiet_mode =  self.config.execute(|config| -> bool {
             let config = config.lock().expect("Unable to lock config.");
-            config.get_string("quiet_mode")
+            config.get_bool("quiet_mode")
         });
 
-        let notifier = self.notifier_factory.from_arg(quiet_mode == "1");
+        let notifier = self.notifier_factory.from_arg(quiet_mode);
 
         let notifications = match self.notification_client.notifications() {
             Ok(notifications) => notifications,
