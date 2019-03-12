@@ -24,6 +24,8 @@ Now you should have a desktop entry and in your search you will be able to find 
 
 If application is missing, just run `ghnotifier run -d`.
 
+The only thing left to do is add your github access token.
+Open Settings from the menu and just past your token in and save.
 
 Screenshots
 ===========
